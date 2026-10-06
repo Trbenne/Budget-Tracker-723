@@ -4,7 +4,7 @@ const webpack = require("webpack");
 const path = require("path");
 const buildPath = path.resolve(__dirname, "build");
 const nodeModulesPath = path.resolve(__dirname, "node_modules");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WorkboxPlugin = require("workbox-webpack-plugin");
 const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
@@ -13,7 +13,8 @@ const package_json = require("./package.json");
 const GIT_COMMIT = `${process.env.GITHUB_REF_NAME}.${process.env.GITHUB_SHA}`;
 const GIT_BRANCH_MAIN = process.env.GITHUB_REF_NAME == "main";
 
-const MODE = 'production';
+const MODE = "production";
+const IS_DESKTOP = process.env.DESKTOP === "1";
 
 const config = {
   mode: MODE,
@@ -27,7 +28,7 @@ const config = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      "React": "react",
+      React: "react",
     }),
     new CleanWebpackPlugin(),
     // Define production build to allow React to strip out unnecessary checks
@@ -37,62 +38,66 @@ const config = {
         SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN),
         BUILD_DATE: JSON.stringify(new Date()),
         GIT_COMMIT: JSON.stringify(GIT_COMMIT),
-        IS_DEVELOP: !GIT_BRANCH_MAIN
+        IS_DEVELOP: !GIT_BRANCH_MAIN,
+        DESKTOP: JSON.stringify(IS_DESKTOP),
       },
     }),
     // Allows error warnings but does not stop compiling.
     new webpack.NoEmitOnErrorsPlugin(),
     // Transfer Files
-    new CopyWebpackPlugin(
-      {
-          patterns: [
-              { from: 'src/www/html' },
-              { from: "src/www/images", to: "images" },
-              { from: "src/www/images/icons-dev", to: !GIT_BRANCH_MAIN ? "images/icons" :  "images/icons-dev"},
-          ]
-      }
-    ),
-    new WorkboxPlugin.GenerateSW({
-      clientsClaim: false, // Whether or not the service worker should start controlling any existing clients as soon as it activates.
-      skipWaiting: false,
-      maximumFileSizeToCacheInBytes: 10000000, // 10MB
-      runtimeCaching: [
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "src/www/html" },
+        { from: "src/www/images", to: "images" },
         {
-          urlPattern: /.*\.(?:png|jpg|jpeg|svg|gif)/,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'images',
-            expiration: {
-              maxEntries: 10,
-            },
-          },
+          from: "src/www/images/icons-dev",
+          to: !GIT_BRANCH_MAIN ? "images/icons" : "images/icons-dev",
         },
       ],
-      exclude: [
-        /.*\/images\/how-to-install\/.*$/,
-      ],
-      disableDevLogs: false,
-      mode: MODE,
-      include: [
-        /\.html$/,
-        /\.js$/,
-        /\.jpg$/,
-        /\.svg$/,
-        /\.png$/,
-        /\.json$/,
-        /\.xml$/,
-      ],
     }),
-    sentryWebpackPlugin({
-      release: `${package_json.name}@${package_json.version}-${GIT_COMMIT}`,
-      include: "build",
-      ignoreFile: ".sentrycliignore",
-      ignore: [
-        "node_modules",
-        "webpack-dev-server.config.js",
-        "webpack-production.config.js",
-      ],
-    }),
+    ...(IS_DESKTOP
+      ? []
+      : [
+          new WorkboxPlugin.GenerateSW({
+            clientsClaim: false,
+            skipWaiting: false,
+            maximumFileSizeToCacheInBytes: 10000000,
+            runtimeCaching: [
+              {
+                urlPattern: /.*\.(?:png|jpg|jpeg|svg|gif)/,
+                handler: "CacheFirst",
+                options: {
+                  cacheName: "images",
+                  expiration: {
+                    maxEntries: 10,
+                  },
+                },
+              },
+            ],
+            exclude: [/.*\/images\/how-to-install\/.*$/],
+            disableDevLogs: false,
+            mode: MODE,
+            include: [
+              /\.html$/,
+              /\.js$/,
+              /\.jpg$/,
+              /\.svg$/,
+              /\.png$/,
+              /\.json$/,
+              /\.xml$/,
+            ],
+          }),
+          sentryWebpackPlugin({
+            release: `${package_json.name}@${package_json.version}-${GIT_COMMIT}`,
+            include: "build",
+            ignoreFile: ".sentrycliignore",
+            ignore: [
+              "node_modules",
+              "webpack-dev-server.config.js",
+              "webpack-production.config.js",
+            ],
+          }),
+        ]),
   ],
   module: {
     rules: [
@@ -116,33 +121,30 @@ const config = {
       {
         test: /\.scss$/,
         use: [
-          "style-loader", 
-          "css-loader", 
+          "style-loader",
+          "css-loader",
           {
             loader: "sass-loader",
             options: {
-              api: "modern"
-            }
-          }
+              api: "modern",
+            },
+          },
         ],
       },
       {
         test: /\.css$/,
-        use: [
-          "style-loader", 
-          "css-loader"
-        ],
+        use: ["style-loader", "css-loader"],
       },
       {
         test: /\.(jpe?g|png|gif|svg|eot|woff|ttf|svg|woff2)$/,
         use: [
-            {
-                loader: 'file-loader',
-                options: {
-                    name : 'name=[name].[ext]'
-                }
-            }
-        ]
+          {
+            loader: "file-loader",
+            options: {
+              name: "name=[name].[ext]",
+            },
+          },
+        ],
       },
     ],
   },

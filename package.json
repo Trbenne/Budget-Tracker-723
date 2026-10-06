@@ -2,12 +2,17 @@
   "name": "seven23",
   "version": "2.2.1",
   "description": "seven23",
+  "main": "desktop/main.js",
   "scripts": {
     "start": "webpack serve --config webpack-dev-server.config.js",
     "test": "npx jest --coverage",
     "test:watch": "npx jest --coverage --watch",
     "build": "webpack --config webpack-production.config.js;cp build/index.html build/404.html; cp build/index.html build/401.html",
     "build:no-progress": "webpack --config webpack-production.config.js;cp build/index.html build/404.html; cp build/index.html build/401.html",
+    "desktop:build": "DESKTOP=1 webpack --config webpack-production.config.js && cp build/index.html build/404.html && cp build/index.html build/401.html",
+    "desktop:start": "npm run desktop:build && electron .",
+    "desktop:smoke": "electron desktop/smoke-test.js --no-sandbox",
+    "desktop:dist": "npm run desktop:build && electron-builder --linux",
     "serve:build": "npx http-server ./build -s -H localhost -p 8080 ",
     "backend": "docker run --env-file ./.env -p 8000:8000 -t -i sebastienbarbier/seven23",
     "format": "prettier --trailing-comma es5 --write '{src,__{tests,mocks}__}/**/*.js' --plugin=prettier-plugin-organize-imports --check",
@@ -72,7 +77,9 @@
     "url-loader": "^4.1.1",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2",
-    "webpack-dev-server": "^6.0.0"
+    "webpack-dev-server": "^6.0.0",
+    "electron": "43.5.0",
+    "electron-builder": "26.8.1"
   },
   "dependencies": {
     "@date-io/moment": "^3.2.0",
@@ -112,5 +119,31 @@
     "uuid": "^14.0.1",
     "workbox-webpack-plugin": "^7.4.1",
     "workbox-window": "^7.4.1"
+  },
+  "build": {
+    "appId": "org.seven23.desktop",
+    "productName": "Seven23",
+    "files": [
+      "desktop/main.js",
+      "desktop/serve.js",
+      "build/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Office"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    }
   }
 }

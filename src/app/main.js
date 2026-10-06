@@ -39,7 +39,11 @@ export const Main = () => {
   //
   useEffect(() => {
     // Connect with workbox to display snackbar when update is available.
-    if (process.env.NODE_ENV != "development" && "serviceWorker" in navigator) {
+    if (
+      process.env.NODE_ENV != "development" &&
+      !process.env.DESKTOP &&
+      "serviceWorker" in navigator
+    ) {
       const workbox = new Workbox("/service-worker.js");
 
       workbox.addEventListener("installed", (event) => {
@@ -48,7 +52,7 @@ export const Main = () => {
           dispatch(
             AppActions.cacheDidUpdate(() => {
               AppActions.reload();
-            })
+            }),
           );
         }
       });

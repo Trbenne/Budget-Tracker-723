@@ -24,7 +24,7 @@ export default function DevelopmentSettings() {
   const isLogged = useSelector((state) => state.server.isLogged);
   const update_available = useSelector((state) => state.state.cacheDidUpdate);
   const isBackedUpKey = useSelector(
-    (state) => state?.user?.profile?.profile?.key_verified == true
+    (state) => state?.user?.profile?.profile?.key_verified == true,
   );
 
   const testSnackbar = () => {
@@ -69,13 +69,17 @@ export default function DevelopmentSettings() {
           />
         </ListItem>
 
-        <ListItem button onClick={() => checkForUpdates()}>
-          <ListItemIcon>
-            <CachedIcon />
-          </ListItemIcon>
-          <ListItemText primary="Check for update" />
-        </ListItem>
-        <Divider />
+        {!process.env.DESKTOP && (
+          <>
+            <ListItem button onClick={() => checkForUpdates()}>
+              <ListItemIcon>
+                <CachedIcon />
+              </ListItemIcon>
+              <ListItemText primary="Check for update" />
+            </ListItem>
+            <Divider />
+          </>
+        )}
         <ListItem button onClick={() => window.method.does.not.exist()}>
           <ListItemIcon>
             <BugReportIcon />
