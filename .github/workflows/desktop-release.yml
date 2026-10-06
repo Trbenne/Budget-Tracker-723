@@ -1,0 +1,58 @@
+name: Desktop release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build desktop bundle
+        run: npm run desktop:build
+
+      - name: Package AppImage
+        run: npx electron-builder --linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Seven23-linux
+          path: dist/*.AppImage
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build desktop bundle
+        shell: bash
+        run: |
+          export DESKTOP=1
+          npx webpack --config webpack-production.config.js
+          cp build/index.html build/404.html
+          cp build/index.html build/401.html
+
+      - name: Package Windows installer
+        run: npx electron-builder --win
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Seven23-windows
+          path: dist/*.exe
