@@ -1,0 +1,16 @@
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - checkout, setup-node
+      - npm ci
+      - npm run desktop:build
+      - npx electron-builder --linux
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - checkout, setup-node
+      - npm ci
+      - npm run desktop:build
+      - npx electron-builder --win
