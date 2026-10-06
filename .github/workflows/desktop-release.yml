@@ -1,12 +1,16 @@
+<<<<<<< HEAD
 name: Desktop release
 
 on:
   workflow_dispatch:
 
+=======
+>>>>>>> 0a20067f0220d81c3417ec9e5c4e2ec2e7a85c2a
 jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -27,10 +31,17 @@ jobs:
         with:
           name: Seven23-linux
           path: dist/*.AppImage
+=======
+      - checkout, setup-node
+      - npm ci
+      - npm run desktop:build
+      - npx electron-builder --linux
+>>>>>>> 0a20067f0220d81c3417ec9e5c4e2ec2e7a85c2a
 
   windows:
     runs-on: windows-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -56,3 +67,9 @@ jobs:
         with:
           name: Seven23-windows
           path: dist/*.exe
+=======
+      - checkout, setup-node
+      - npm ci
+      - npm run desktop:build
+      - npx electron-builder --win
+>>>>>>> 0a20067f0220d81c3417ec9e5c4e2ec2e7a85c2a
